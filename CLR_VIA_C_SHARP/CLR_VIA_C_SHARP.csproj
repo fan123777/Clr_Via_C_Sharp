@@ -41,7 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CLR_Basics\CodeExecutionModelInCLR.cs" />
+    <Compile Include="1.CLR_Basics\1.CodeExecutionModelInCLR\CodeExecutionModelInCLR.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

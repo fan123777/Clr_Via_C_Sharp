@@ -4,13 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CLR_VIA_C_SHARP
+namespace CLR_VIA_C_SHARP.CLR_Basics
 {
-    class Program
+    class CodeExecutionModelInCLR
     {
-        static void Main(string[] args)
+        public static void main()
         {
-            CLR_VIA_C_SHARP.CLR_Basics.CodeExecutionModelInCLR.main();
+
         }
     }
 }

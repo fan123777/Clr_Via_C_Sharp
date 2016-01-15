@@ -10,7 +10,8 @@ namespace CLR_VIA_C_SHARP
     {
         static void Main(string[] args)
         {
-            CLR_VIA_C_SHARP.CLR_Basics.CodeExecutionModelInCLR.main();
+            CLR_Basics.CodeExecutionModelInCLR.main();
+            _1_CLR_Basics._2_ApplicationDeployment.ApplicationDeployment.main();
         }
     }
 }

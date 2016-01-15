@@ -41,16 +41,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="1.CLR_Basics\1.CodeExecutionModelInCLR\CodeExecutionModelInCLR.cs" />
-    <Compile Include="1.CLR_Basics\1.CodeExecutionModelInCLR\SomeLibrary.cs" />
-    <Compile Include="1.CLR_Basics\1.CodeExecutionModelInCLR\Test.cs" />
-    <Compile Include="1.CLR_Basics\1.CodeExecutionModelInCLR\Testing.cs" />
+    <Compile Include="1_CLR_Basics\1_CodeExecutionModelInCLR\CodeExecutionModelInCLR.cs" />
+    <Compile Include="1_CLR_Basics\1_CodeExecutionModelInCLR\SomeLibrary.cs" />
+    <Compile Include="1_CLR_Basics\1_CodeExecutionModelInCLR\Test.cs" />
+    <Compile Include="1_CLR_Basics\1_CodeExecutionModelInCLR\Testing.cs" />
+    <Compile Include="1_CLR_Basics\2_ApplicationDeployment\ApplicationDeployment.cs" />
+    <Compile Include="1_CLR_Basics\2_ApplicationDeployment\MyProgram.cs" />
+    <Compile Include="1_CLR_Basics\2_ApplicationDeployment\Testing.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

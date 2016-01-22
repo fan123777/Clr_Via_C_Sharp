@@ -48,6 +48,8 @@
     <Compile Include="1_CLR_Basics\2_ApplicationDeployment\ApplicationDeployment.cs" />
     <Compile Include="1_CLR_Basics\2_ApplicationDeployment\MyProgram.cs" />
     <Compile Include="1_CLR_Basics\2_ApplicationDeployment\Testing.cs" />
+    <Compile Include="1_CLR_Basics\3_SharedAndStrongNameAssembly\SharedAndStrongNameAssembly.cs" />
+    <Compile Include="1_CLR_Basics\3_SharedAndStrongNameAssembly\Testing.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -5,6 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using System.Collections;
+//using Microsoft.Office.Interop.Excel;
+using System.Dynamic;
+using System.Reflection;
 
 namespace CLR_VIA_C_SHARP._2_Type_Design._5_PrimitiveReferenceSignificantTypes
 {
@@ -20,6 +23,13 @@ namespace CLR_VIA_C_SHARP._2_Type_Design._5_PrimitiveReferenceSignificantTypes
             TestPakaging1();
             TestPakaging2();
             TestEqualityAndIdentity();
+            TestDynamic();
+            TestCom();
+            TestReflection();
+
+            // Testing
+            Testing test = new Testing();
+            test.run();
         }
 
         public static void TestPrimitive()
@@ -380,6 +390,137 @@ namespace CLR_VIA_C_SHARP._2_Type_Design._5_PrimitiveReferenceSignificantTypes
 
         }
 
+        public static void TestDynamic()
+        {
+            dynamic value;
+            for (Int32 demo = 0; demo < 2; demo++)
+            {
+                value = (demo == 0) ? (dynamic)5 : (dynamic)"A";
+                value = value + value;
+                M(value);
+            }
+
+            Object o1 = 123; // OK: Неявное приведение Int32 к Object (упаковка)
+            // Int32 n1 = o1; // Ошибка: Нет неявного приведения Object к Int32
+            Int32 n2 = (Int32)o1; // OK: Явное приведение Object к Int32 (распаковка)
+            dynamic d1 = 123; // OK: Неявное приведение Int32 к dynamic (упаковка)
+            Int32 n3 = d1; // OK: Неявное приведение dynamic к Int32 (распаковка)
+
+            dynamic d = 123;
+            // var result = M(d); // 'var result' - то же, что 'dynamic result'
+
+            dynamic d2 = 123;
+            var x2 = (Int32)d2; // Конвертация: 'var x' одинаково с 'Int32 x'
+            var dt2 = new DateTime(d2); // Создание: 'var dt' одинаково с 'DateTime dt'
+
+            //dynamic stringType = new StaticMemberDynamicWrapper(typeof(String));
+            //var r = stringType.Concat("A", "B"); // Динамический вызов статического
+            //// метода Concat класса String
+            //Console.WriteLine(r); // выводится "AB"
+        }
+
+        private static void M(Int32 n) { Console.WriteLine("M(Int32): " + n); }
+        private static void M(String s) { Console.WriteLine("M(String): " + s); }
+
+        public static void TestCom()
+        {
+            //Application excel = new Application();
+            //excel.Visible = true;
+            //excel.Workbooks.Add(Type.Missing);
+            //((Range)excel.Cells[1, 1]).Value = "Text in cell A1";
+            // Помещаем эту строку в ячейку A1.
+
+            // with dynamic
+            //Application excel = new Application();
+            //excel.Visible = true;
+            //excel.Workbooks.Add(Type.Missing);
+            //excel.Cells[1, 1].Value = "Text in cell A1";
+            // Помещаем эту строку в ячейку A1
+        }
+
+        public static void TestReflection()
+        {
+            //Object target = "Jeffrey Richter";
+            //Object arg = "ff";
+
+            //// Находим метод, который подходит по типам аргументов
+            //Type[] argTypes = newType[] { arg.GetType() };
+            //MethodInfo method = target.GetType().GetMethod("Contains", argTypes);
+            //// Вызываем метод с желаемым аргументом
+            //Object[] arguments = newObject[] { arg };
+            //Boolean result = Convert.ToBoolean(method.Invoke(target, arguments));
+
+            dynamic target = "Jeffrey Richter";
+            dynamic arg = "ff";
+            Boolean result = target.Contains(arg);
+        }
+
+        internal sealed class StaticMemberDynamicWrapper : DynamicObject
+        {
+            private readonly TypeInfo m_type;
+            public StaticMemberDynamicWrapper(Type type) { m_type = type.GetTypeInfo(); }
+            public override IEnumerable<String> GetDynamicMemberNames()
+            {
+                return m_type.DeclaredMembers.Select(mi => mi.Name);
+            }
+            public override Boolean TryGetMember(GetMemberBinder binder, out object result)
+            {
+                result = null;
+                var field = FindField(binder.Name);
+                if (field != null) { result = field.GetValue(null); return true; }
+                var prop = FindProperty(binder.Name, true);
+                if (prop != null) { result = prop.GetValue(null, null); return true; }
+                return false;
+            }
+            public override Boolean TrySetMember(SetMemberBinder binder, object value)
+            {
+                var field = FindField(binder.Name);
+                if (field != null) { field.SetValue(null, value); return true; }
+                var prop = FindProperty(binder.Name, false);
+                if (prop != null) { prop.SetValue(null, value, null); return true; }
+                return false;
+            }
+            //public override Boolean TryInvokeMember(InvokeMemberBinder binder, Object[]
+            //args,
+            //out Object result)
+            //{
+            //    MethodInfo method = FindMethod(binder.Name, args);
+            //    if (method == null) { result = null; return false; }
+            //    result = method.Invoke(null, args);
+            //    return true;
+            //}
+            private MethodInfo FindMethod(String name, Type[] paramTypes)
+            {
+                return m_type.DeclaredMethods.FirstOrDefault(mi => mi.IsPublic &&
+                mi.IsStatic
+                && mi.Name == name
+                && ParametersMatch(mi.GetParameters(), paramTypes));
+            }
+            private Boolean ParametersMatch(ParameterInfo[] parameters, Type[]
+            paramTypes)
+            {
+                if (parameters.Length != paramTypes.Length) return false;
+                for (Int32 i = 0; i < parameters.Length; i++)
+                    if (parameters[i].ParameterType != paramTypes[i]) return false;
+                return true;
+            }
+            private FieldInfo FindField(String name)
+            {
+                return m_type.DeclaredFields.FirstOrDefault(fi => fi.IsPublic && fi.IsStatic
+                && fi.Name == name);
+            }
+            private PropertyInfo FindProperty(String name, Boolean get)
+            {
+                if (get)
+                    return m_type.DeclaredProperties.FirstOrDefault(
+                    pi => pi.Name == name && pi.GetMethod != null &&
+                    pi.GetMethod.IsPublic && pi.GetMethod.IsStatic);
+                return m_type.DeclaredProperties.FirstOrDefault(
+                pi => pi.Name == name && pi.SetMethod != null &&
+                pi.SetMethod.IsPublic && pi.SetMethod.IsStatic);
+            }
+        }
+
         // Примитивные типы в языках программирования
         // Типы данных, которые поддерживаются компилятором напрямую, называются примитивными (primitive types); у них существуют прямые аналоги в библиотеке классов .NET Framework Class Library (FCL).
         // Примитивный тип - FCL тип - Совместимость с CLS - Описание
@@ -627,17 +768,57 @@ namespace CLR_VIA_C_SHARP._2_Type_Design._5_PrimitiveReferenceSignificantTypes
         // не сохраняйте хеш коды в базе данных, изменение алгоритма - крах.
 
         // Примитивный тип данных dynamic
+        // Язык C# обеспечивает безопасность типов данных. Это означает, что все выражения разрешаются в экземпляр типа и компилятор генерирует только тот код, который старается представить операции, правомерные для данного типа данных.
+        // Однако возможны неприятные ситуации, возникающие из-за того, что программа должна выполняться на основе информации, недоступной до ее выполнения.
+        // Если вы пишете приложение на «чистом» языке C#, неприятная ситуация может подстерегать вас только во время работы с информацией, определяемой на этапе выполнения, когда вы используете отражения.
+        // Однако многие разработчики используют также С# для связи с компонентами, не реализованными на С#. Некоторые из этих компонентов могут быть написаны на динамических языках, например Python или Ruby, или быть COM-объектами, которые поддерживают интерфейс IDispatch (возможно, реализованный на С или C++), или объектами модели DOM (Document Object Model), реализованными при помощи разных языков и технологий. Взаимодействие с DOM-объектами особенно полезно для построения Silverlight-приложений.
+        // Для того чтобы облегчить разработку при помощи отражений или коммуникаций с другими компонентами, компилятор С# предлагает помечать типы как динамические (dynamic). Вы также можете записывать результаты вычисления выражений в переменную и пометить ее тип как динамический. Затем динамическое выражение (переменная) может быть использовано для вызовов членов класса, например поля, свойства/индексатора, метода, делегата, или унарных/бинарных операторов. Когда ваш код вызывает член класса при помощи динамического выражения (переменной), компилятор создает специальный IL-код, который описывает желаемую операцию. Этот код называется полезной нагрузкой (payload). Во время выполнения программы он определяет существующую операцию для выполнения на основе действительного типа объекта, на который ссылается динамическое выражение (переменная).
+        //public static void Main()
+        //{
+        //    dynamic value;
+        //    for (Int32 demo = 0; demo < 2; demo++)
+        //    {
+        //        value = (demo == 0) ? (dynamic)5 : (dynamic)"A";
+        //        value = value + value;
+        //        M(value);
+        //    }
+        //}
+        //private static void M(Int32 n) { Console.WriteLine("M(Int32): " + n); }
+        //private static void M(String s) { Console.WriteLine("M(String): " + s); }
+        // обратимся к оператору +. У этого оператора имеются операнды типа с пометкой dynamic. По этой причине компилятор С# генерирует код полезной нагрузки, который проверяет действительный тип переменной value во время выполнения и определяет, что должен делать оператор +.
+        // Для вызова метода M компилятор создает код полезной нагрузки, который на этапе выполнения будет проверять действительный тип значения переменной, переданной методу M.
+        // Когда тип поля, параметр метода, возвращаемый тип метода или локальная переменная снабжаются пометкой dynamic, компилятор конвертирует этот тип в тип System.Object и применяет экземпляр System.Runtime.CompilerServices.DynamicAttribute к полю, параметру или возвращаемому типу в метаданных. Если локальная переменная определена как динамическая, то тип переменной также будет типом Object, но атрибут DynamicAttribute неприменим к локальным переменным из-за того, что они используются только внутри метода. Из-за того, что типы dynamic и Object одинаковы, вы не сможете создавать методы с сигнатурами, отличающимися только типами dynamic и Object.
+        // Тип dynamic можно использовать для определения аргументов типов обобщенных классов (ссылочный тип), структур (значимый тип), интерфейсов, делегатов или методов. Когда вы это делаете, компилятор конвертирует тип dynamic в Object и применяет DynamicAttribute к различным частям метаданных, где это необходимо. Обратите внимание, что обобщенный код, который вы используете, уже скомпилирован в соответствии с типом Object, и динамическая отправка не осуществляется, поскольку компилятор не производит код полезной нагрузки в обобщенном коде.
+        // компилятор разрешит выполнить приведение типа dynamic к другому типу с использованием синтаксиса неявного приведения.
+        // Если метод M, вызванный на этапе выполнения, возвращает void, выдается исключение Microsoft.CSharp.RuntimeBinder.RuntimeBinderException.
+        // Внимание
+        // Не путайте типы dynamic и var. Объявление локальной переменной как var является синтаксическим указанием компилятору подставлять специальные данные из соответствующего выражения. Ключевое слово var может использоваться только для объявления локальных переменных внутри метода, тогда как ключевое слово dynamic может указываться с локальными переменными, полями и аргументами. Вы не можете привести выражение к типу var, но вы можете привести его к типу dynamic. Вы должны явно инициализировать переменную, объявленную как var, тогда как переменную, объявленную как dynamic, инициализировать нельзя.
+        // При преобразовании типа dynamic в другой статический тип результатом будет, очевидно, тоже статический тип. Аналогичным образом при создании типа с передачей конструктору одного и более аргументов dynamic результатом будет объект того типа, который вы создаете:
+        // Если выражение dynamic задается как коллекция в инструкции foreach или как ресурс в директиве using, то компилятор генерирует код, который попытается привести выражение к необобщенному интерфейсу System.IEnumerable или интерфейсу System.IDisposable соответственно.
+        // Внимание
+        // Выражение dynamic реально имеет тот же тип, что и System.Object. Компилятор принимает операции с выражением как допустимые и не генерирует ни предупреждений, ни ошибок. Однако исключения могут быть выданы на этапе выполнения программы, если программа попытается выполнить недопустимую операцию. К тому же Visual Studio не предоставляет какой-либо IntelliSense-поддержки для написания кода с динамическими выражениями. Вы не можете определить метод расширения для dynamic (об этом рассказывается в главе 8), хотя можете его определить для Object. И вы можете использовать лямбда-выражение или анонимный метод (они оба обсуждаются в главе 17) в качестве аргумента при вызове динамического метода, потому что компилятор не может вычислить фактически используемые типы.
+        // Без типа dynamic значение, возвращаемое excel.Cells[1, 1], имеет тип Object, который должен быть приведен к типу Range перед обращением к его свойству Value. Однако во время генерации выполняемой «обертки» для COM-объекта любое использование типа VARIANT в COM‑методе будет преобразовано в dynamic. Следовательно, поскольку выражение excel.Cells[1, 1] относится к типу dynamic, вам не обязательно явно приводить его к типу Range для обращения к свойству Value. Преобразование к dynamic значительно упрощает код, взаимодействующий с COM-объектами.
+        // компилятор C# на этапе выполнения программы генерирует код полезной нагрузки, основываясь на действительных типах объекта. Этот код полезной нагрузки использует класс, известный как компоновщик (runtime binder).
+        // Во время выполнения сборка Microsoft.CSharp.dll должна быть загружена в домен приложений, что снизит производительность приложения и повысит расход памяти. Кроме того, сборка Microsoft.SCharp.dll загружает библиотеки System.dll и System.Core.dll. А если вы используете тип dynamic для связи с COM-объектами, загружается и библиотека System.Dynamic.dll. И когда будет выполнен код полезной нагрузки, генерирующий динамический код во время выполнения, этот код окажется в сборке, названной анонимной сборкой динамических методов (Anonymously Hosted Dynamic Methods Assembly). Назначение этого кода заключается в повышении производительности динамических ссылок в ситуациях, в которых конкретное место вызова (call site) выдает много вызовов с динамическими аргументами, соответствующих одному типу на этапе выполнения.
+        // Из-за всех издержек, связанных с особенностями встроенных динамических вычислений в C#, вы должны осознанно решить, что именно вы желаете добиться от динамического кода: превосходной производительности приложения при загрузке всех этих сборок или оптимального расходования памяти. Если динамический код используется только в паре мест вашего программного кода, разумнее придерживаться старого подхода: либо вызывать методы отражения (для управляемых объектов), либо «вручную» приводить типы (для COM-объектов).
+        // Во время выполнения компоновщик С# разрешает динамические операции в соответствии с типом объекта. Сначала компоновщик проверяет, реализуется ли типом интерфейс IDynamicMetObjectProvider. И если интерфейс реализован, вызывается метод GetMetaObject, который возвращает тип, производный от DynamicMetaObject. Этот тип может обработать все привязки членов, методов и операторов, связанные с объектом. Интерфейс IDynamicMetaObjectProvider и основной класс DynamicMetaObject определены в пространстве имен System.Dynamic и находятся в сборке System.Core.dll.
+        // Динамические языки, такие как Python и Ruby, используют типы, производные от DynamicMetaObject, что позволяет взаимодействовать с ними из других языков (например, C#). Аналогичным образом компоновщик C# при связи с COM-компонентами будет использовать порожденный тип DynamicMetaObject, умеющий взаимодействовать с COM-компонентами. Порожденный тип DynamicMetaObject определен в сборке System.Dynamic.dll.
+        // Если тип объекта, используемый в динамическом выражении, не реализует интерфейс IDynamicMetaObjectProvider, тогда компилятор C# воспринимает его как обычный объект типа языка C# и все связанные с ним действия осуществляет через отражение.
+        // Одно из ограничений динамических типов заключается в том, что они могут использоваться только для обращения к членам экземпляров, потому что динамическая переменная должна ссылаться на объект. Однако в некоторых случаях бывает полезно динамически вызывать статические методы типа, определяемого во время выполнения. Для этого я создал класс StaticMemberDynamicWrapper, производный от класса System.Dynamic.DynamicObject, реализующего интерфейс IDynamicMetaObjectProvider.
+        // Чтобы вызвать статический метод динамически, сконструируйте экземпляр класса с передачей Type и сохраните ссылку на него в динамическую переменную. Затем вызовите нужный статический метод с использованием синтаксиса вызова экземплярного метода. Пример вызова статического метода Concat(String, String) класса String:
 
 
         // !!!
-        // - readonly
-        // - ArrayList
-        // - System.Collections.Generic.List<T>.
-        // - обобщения
-        // - повторить и разобрать материал главы.
-        // - отражение
+        // - readonly + 
+        // - ArrayList+ 
+        // - System.Collections.Generic.List<T> + 
+        // - обобщения +
+        // - отражение + 
         // - System.IEquatable<T>
         // - Перегрузить методы операторов == и !=.
         // - System.IComparable<T>
+        // - var
+
+        // - повторить и разобрать материал главы !!!
     }
 }

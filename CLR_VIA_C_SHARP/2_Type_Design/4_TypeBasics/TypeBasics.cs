@@ -16,6 +16,8 @@ namespace CLR_VIA_C_SHARP._2_Type_Design._4_TypeBasics
             testCast();
             testIsAs();
             testNamespace();
+            Testing test = new Testing();
+            test.run();
         }
 
         private static void testNew()

@@ -8,6 +8,10 @@ namespace CLR_VIA_C_SHARP._2_Type_Design._4_TypeBasics
 {
     class Testing
     {
+        public void run()
+        {
+
+        }
     }
 
     class Employee

@@ -16,6 +16,8 @@ namespace CLR_VIA_C_SHARP._2_Type_Design._5_PrimitiveReferenceSignificantTypes
             TestList();
             //TestGeneric();
             TestReflection();
+            TestTypes();
+            TestBoxingUnboxing();
         }
 
         private void TestReadonly()
@@ -77,6 +79,19 @@ namespace CLR_VIA_C_SHARP._2_Type_Design._5_PrimitiveReferenceSignificantTypes
             // Using Reflection to get information from an Assembly:
             System.Reflection.Assembly info = typeof(System.Int32).Assembly;
             System.Console.WriteLine(info);
+        }
+
+        private void TestTypes()
+        {
+            // SomeRef r1 = new SomeRef(); // Размещается в куче
+            // SomeVal v1 = new SomeVal(); // Размещается в стеке
+            // SomeVal v1;
+            // Единственное отличие в том, что экземпляр, созданный оператором new, C# «считает» инициализированным.
+        }
+
+        private void TestBoxingUnboxing()
+        {
+
         }
     }
 

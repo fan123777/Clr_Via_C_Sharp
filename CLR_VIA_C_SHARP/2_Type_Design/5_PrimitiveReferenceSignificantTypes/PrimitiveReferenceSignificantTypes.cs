@@ -818,6 +818,9 @@ namespace CLR_VIA_C_SHARP._2_Type_Design._5_PrimitiveReferenceSignificantTypes
         // - Перегрузить методы операторов == и !=.
         // - System.IComparable<T>
         // - var
+        // - посмотреть тождество и равенство.
+        // - dynamic
+        // - c# и com
 
         // - повторить и разобрать материал главы !!!
     }

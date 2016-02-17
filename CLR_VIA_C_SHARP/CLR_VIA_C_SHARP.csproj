@@ -54,6 +54,8 @@
     <Compile Include="2_Type_Design\4_TypeBasics\TypeBasics.cs" />
     <Compile Include="2_Type_Design\5_PrimitiveReferenceSignificantTypes\PrimitiveReferenceSignificantTypes.cs" />
     <Compile Include="2_Type_Design\5_PrimitiveReferenceSignificantTypes\Testing.cs" />
+    <Compile Include="2_Type_Design\6_MembersAndTypes\MembersAndTypes.cs" />
+    <Compile Include="2_Type_Design\6_MembersAndTypes\Testing.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

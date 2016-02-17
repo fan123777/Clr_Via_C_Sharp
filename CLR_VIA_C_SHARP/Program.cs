@@ -19,8 +19,12 @@ namespace CLR_VIA_C_SHARP
             }
             
             // 2. Type Design
-            _2_Type_Design._4_TypeBasics.TypeBasics.main();
-            _2_Type_Design._5_PrimitiveReferenceSignificantTypes.PrimitiveReferenceSignificantTypes.main();
+            if (false)
+            {
+                _2_Type_Design._4_TypeBasics.TypeBasics.main();
+                _2_Type_Design._5_PrimitiveReferenceSignificantTypes.PrimitiveReferenceSignificantTypes.main();
+            }
+            _2_Type_Design._6_MembersAndTypes.MembersAndTypes.main();
         }
     }
 }

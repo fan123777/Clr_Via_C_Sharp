@@ -93,4 +93,132 @@ namespace CLR_VIA_C_SHARP._2_Type_Design._6_MembersAndTypes
         private static String s_AStaticField;
         public static event EventHandler AStaticEvent;
     }
+
+    internal class Employee
+    {
+        // Невиртуальный экземплярный метод
+        public Int32 GetYearsEmployed()
+        {
+            return 5;
+        }
+        // Виртуальный метод (виртуальный - значит, экземплярный)
+        public virtual String GetProgressReport()
+        {
+            return "Jon";
+        }
+        // Статический метод
+        public static Employee Lookup(String name)
+        {
+            return new Employee();
+        }
+    }
+
+    internal class SomeClass
+    {
+        // ToString - виртуальный метод базового класса Object
+        public override String ToString()
+        {
+            // Компилятор использует команду call для невиртуального вызова
+            // метода ToString класса Object
+            // Если бы компилятор вместо call использовал callvirt, этот
+            // метод продолжал бы рекурсивно вызывать сам себя до переполнения стека
+            return base.ToString();
+        }
+    }
+
+    public class Set
+    {
+        private Int32 m_length = 0;
+        // Этот перегруженный метод — невиртуальный
+        public Int32 Find(Object value)
+        {
+            return Find(value, 0, m_length);
+        }
+        // Этот перегруженный метод — невиртуальный
+        public Int32 Find(Object value, Int32 startIndex)
+        {
+            return Find(value, startIndex, m_length - startIndex);
+        }
+        // Наиболее функциональный метод сделан виртуальным
+        // и может быть переопределен
+        public virtual Int32 Find(Object value, Int32 startIndex, Int32 endIndex)
+        {
+            // Здесь находится настоящая реализация, которую можно переопределить...
+            return 5;
+        }
+        // Другие методы
+    }
+
+    public sealed class Point
+    {
+        private Int32 m_x, m_y;
+        public Point(Int32 x, Int32 y) { m_x = x; m_y = y; }
+        public override String ToString()
+        {
+            return String.Format("({0}, {1})", m_x, m_y);
+        }
+    }
+
+    public class Phone
+    {
+        public void Dial()
+        {
+            Console.WriteLine("Phone.Dial");
+            EstablishConnection();
+            // Выполнить действия по набору телефонного номера
+        }
+        protected virtual void EstablishConnection()
+        {
+            Console.WriteLine("Phone.EstablishConnection");
+            // Выполнить действия по установлению соединения
+        }
+    }
+
+    public class BetterPhone : Phone
+    {
+        public void Dial()
+        {
+            Console.WriteLine("BetterPhone.Dial");
+            EstablishConnection();
+            base.Dial();
+        }
+
+        protected virtual void EstablishConnection()
+        {
+            Console.WriteLine("BetterPhone.EstablishConnection");
+            // Выполнить действия по набору телефонного номера
+        }
+    }
+
+    public class BetterPhone1 : Phone
+    {
+        // Этот метод Dial никак не связан с одноименным методом класса Phone
+        public new void Dial()
+        {
+            Console.WriteLine("BetterPhone.Dial");
+            EstablishConnection();
+            base.Dial();
+        }
+
+        protected new  virtual void EstablishConnection()
+        {
+            Console.WriteLine("BetterPhone.EstablishConnection");
+            // Выполнить действия по установлению соединения
+        }
+    }
+
+    public class BetterPhone2 : Phone
+    {
+        // Метод Dial удален (так как он наследуется от базового типа)
+        // Здесь ключевое слово new удалено, а модификатор virtual заменен
+        // на override, чтобы указать, что этот метод связан с методом
+        // EstablishConnection из базового типа
+        protected override void EstablishConnection()
+        {
+            Console.WriteLine("BetterPhone.EstablishConnection");
+            // Выполнить действия по установлению соединения
+        }
+    }
 }
+
+    

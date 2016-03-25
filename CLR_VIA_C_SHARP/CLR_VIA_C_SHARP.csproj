@@ -58,6 +58,7 @@
     <Compile Include="2_Type_Design\6_MembersAndTypes\Testing.cs" />
     <Compile Include="2_Type_Design\7_ConstantsAndFields\ConstantsAndFields.cs" />
     <Compile Include="2_Type_Design\7_ConstantsAndFields\Testing.cs" />
+    <Compile Include="2_Type_Design\8_Methods\Methods.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -14,6 +14,8 @@ namespace CLR_VIA_C_SHARP._2_Type_Design._8_Methods
             test_extension();
             test_extension1();
             test_partial_methods();
+            Testing testing = new Testing();
+            testing.main();
         }
 
         private static void test_rational()
@@ -558,7 +560,8 @@ namespace CLR_VIA_C_SHARP._2_Type_Design._8_Methods
 
 
     // !!!
-    // - foreach
-    // - Action
-    // - типы делегаты
+    // - foreach +
+    // - Action ...
+    // - => ... 
+    // - типы делегаты ...
 }

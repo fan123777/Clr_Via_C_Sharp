@@ -50,6 +50,7 @@
     <Compile Include="1_CLR_Basics\2_ApplicationDeployment\Testing.cs" />
     <Compile Include="1_CLR_Basics\3_SharedAndStrongNameAssembly\SharedAndStrongNameAssembly.cs" />
     <Compile Include="1_CLR_Basics\3_SharedAndStrongNameAssembly\Testing.cs" />
+    <Compile Include="2_Type_Design\10_Properties\Properties.cs" />
     <Compile Include="2_Type_Design\4_TypeBasics\Testing.cs" />
     <Compile Include="2_Type_Design\4_TypeBasics\TypeBasics.cs" />
     <Compile Include="2_Type_Design\5_PrimitiveReferenceSignificantTypes\PrimitiveReferenceSignificantTypes.cs" />

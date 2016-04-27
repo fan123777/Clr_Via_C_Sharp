@@ -28,8 +28,9 @@ namespace CLR_VIA_C_SHARP
                 _2_Type_Design._8_Methods.Methods.main();
                 _2_Type_Design._9_Parameters.Parameters.main();
                 _2_Type_Design._10_Properties.Properties.main();
+                _2_Type_Design._11_Events.Events.main();
             }
-            _2_Type_Design._11_Events.Events.main();
+            _2_Type_Design._12_Generic.Generic.main();
         }
     }
 }

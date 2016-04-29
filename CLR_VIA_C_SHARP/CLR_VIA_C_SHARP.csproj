@@ -53,6 +53,7 @@
     <Compile Include="2_Type_Design\10_Properties\Properties.cs" />
     <Compile Include="2_Type_Design\11_Events\Events.cs" />
     <Compile Include="2_Type_Design\12_Generic\Generic.cs" />
+    <Compile Include="2_Type_Design\13_Interfaces\Interfaces.cs" />
     <Compile Include="2_Type_Design\4_TypeBasics\Testing.cs" />
     <Compile Include="2_Type_Design\4_TypeBasics\TypeBasics.cs" />
     <Compile Include="2_Type_Design\5_PrimitiveReferenceSignificantTypes\PrimitiveReferenceSignificantTypes.cs" />

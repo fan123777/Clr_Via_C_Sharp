@@ -65,6 +65,7 @@
     <Compile Include="2_Type_Design\8_Methods\Methods.cs" />
     <Compile Include="2_Type_Design\8_Methods\Testing.cs" />
     <Compile Include="2_Type_Design\9_Parameters\Parameters.cs" />
+    <Compile Include="2_Type_Design\Testing\Testing.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

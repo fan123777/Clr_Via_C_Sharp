@@ -14,6 +14,13 @@ namespace CLR_VIA_C_SHARP._2_Type_Design.Testing
             nsTypeBasics.TestTypeBasics testTypeBasics = new nsTypeBasics.TestTypeBasics();
             testTypeBasics.Run();
             testTypeBasics.TestCast();
+            testTypeBasics.TestTypeControl();
+
+            // 5 Primitive Reference Significant Types
+            nsPrimitiveReferenceSignificantTypes.PrimitiveReferenceSignificantTypes testTypes = new nsPrimitiveReferenceSignificantTypes.PrimitiveReferenceSignificantTypes();
+            testTypes.Run();
+
+
         }
     }
 
@@ -105,8 +112,39 @@ namespace CLR_VIA_C_SHARP._2_Type_Design.Testing
                 // InvalidCastException if we have wrong type.
 
                 // Приведение типов в C# с помощью операторов is и as
-                // 
+                Boolean b1 = (o is Object); // true
+                Boolean b2 = (o is Person); // false
 
+                if (o is Person)
+                {
+                    Person p1 = (Person)(o);
+                }
+
+                Person p2 = o as Person;
+                if(p2 != null)
+                {
+
+                }
+            }
+
+            public void TestTypeControl()
+            {
+                Object o1 = new Object();
+                Object o2 = new B();
+                Object o3 = new D();
+                Object o4 = o3;
+                B b1 = new B();
+                B b2 = new D();
+                D d1 = new D();
+                // B b3 = new Object(); // CTE
+                // D d2 = new Object(); // CTE
+                B b4 = d1;
+                // D d3 = b2; // CTE
+                D d4 = (D)d1;
+                D d5 = (D)b2;
+                // D d6 = (D)b1; // RTE
+                // B b5 = (B)o1; // RTE
+                B b6 = (D)b2;
             }
         }
 
@@ -255,13 +293,32 @@ namespace CLR_VIA_C_SHARP._2_Type_Design.Testing
 
         }
 
+        class B
+        {
+
+        }
+
+        class D : B
+        {
+
+        }
+
     }
 
+    namespace nsPrimitiveReferenceSignificantTypes
+    {
+        class PrimitiveReferenceSignificantTypes
+        {
+            public void Run()
+            {
+                UInt32 invalid = unchecked((UInt32)(-1)); // OK
 
-    // repeat and practice with everything from part 2.
-    
-    
+                Byte b = 100; // Выдается исключение
+                // b = checked((Byte)(b + 200)); // OverflowException
+                b = (Byte)checked(b + 200); // b содержит 44; нет OverflowException
+            }
+        }
+    }
+
     // !!!
-
-
 }

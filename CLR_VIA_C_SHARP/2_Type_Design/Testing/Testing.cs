@@ -20,7 +20,19 @@ namespace CLR_VIA_C_SHARP._2_Type_Design.Testing
             nsPrimitiveReferenceSignificantTypes.PrimitiveReferenceSignificantTypes testTypes = new nsPrimitiveReferenceSignificantTypes.PrimitiveReferenceSignificantTypes();
             testTypes.Run();
 
+            // 6 Members and Types
+            nsMembersAndTypes.MembersAndTypes testMembersAndTypes = new nsMembersAndTypes.MembersAndTypes();
+            testMembersAndTypes.Run();
 
+            // 7 Constants and Fields
+            nsConstantsAndFields.ConstantsAndFields testConstantsFields = new nsConstantsAndFields.ConstantsAndFields();
+            testConstantsFields.Run();
+
+            // 8 Methods
+            nsMethods.Methods testMethods = new nsMethods.Methods();
+            testMethods.Run();
+            testMethods.TestExtensionMethods();
+            testMethods.TestPartialMethod();
         }
     }
 
@@ -302,7 +314,6 @@ namespace CLR_VIA_C_SHARP._2_Type_Design.Testing
         {
 
         }
-
     }
 
     namespace nsPrimitiveReferenceSignificantTypes
@@ -320,5 +331,358 @@ namespace CLR_VIA_C_SHARP._2_Type_Design.Testing
         }
     }
 
-    // !!!
+    namespace nsMembersAndTypes
+    {
+        class MembersAndTypes
+        {
+            public void Run()
+            {
+                Employee e = new Employee("John", 2, "Great worker");
+                // Employee.registerEmployee(e);
+            }
+        }
+
+        public sealed class SomeType
+        {
+            // Вложенный класс
+            private class SomeNestedType
+            {
+            }
+
+            // Константа, неизменяемое и статическое изменяемое поле
+            // Constant, readonly, and static read/write field
+            private const Int32 c_SomeConstant = 1;
+            private readonly String m_SomeReadOnlyField = "2";
+            private static Int32 s_SomeReadWriteField = 3;
+
+            // Конструктор типа
+            static SomeType()
+            {
+
+            }
+
+            // Конструкторы экземпляров
+            public SomeType()
+            {
+
+            }
+
+            public SomeType(Int32 x)
+            {
+
+            }
+
+            // Экземплярный и статический методы
+            private String InstanceMethod()
+            {
+                return null;
+            }
+
+            public static void func()
+            {
+
+            }
+
+            // Необобщенное экземплярное свойство
+            public Int32 SomeProp
+            {
+                get { return 0; }
+                set { }
+            }
+
+            // Обобщенное экземплярное свойство
+            public Int32 this[String s]
+            {
+                get { return 0; }
+                set { }
+            }
+
+            // Экземплярное событие
+            public event EventHandler SomeEvent;
+        }
+
+        internal class Employee
+        {
+            Int32 m_YearsEmployed;
+            String m_ProgressReport;
+            String m_Name;
+
+            static Dictionary<String, Employee> m_Employees;
+
+            public Employee(String name, Int32 yearsEmployed, String progressReport)
+            {
+                m_Name = name;
+                m_YearsEmployed = yearsEmployed;
+                m_ProgressReport = progressReport;
+
+                m_Employees[m_Name] = this;
+            }
+
+            static Employee()
+            {
+                m_Employees = new Dictionary<string, Employee>();
+            }
+
+            public String GetName()
+            {
+                return m_Name;
+            }
+
+            public static void registerEmployee(Employee e)
+            {
+                m_Employees[e.GetName()] = e;
+            }
+
+            // Невиртуальный экземплярный метод
+            public Int32 GetYearsEmployed()
+            {
+                return m_YearsEmployed;
+            }
+
+            // Виртуальный метод (виртуальный - значит, экземплярный)
+            public virtual String GetProgressReport()
+            {
+                return m_ProgressReport;
+            }
+
+            // Статический метод
+            public static Employee Lookup(String name)
+            {
+                return m_Employees[name];
+            }
+        }
+    }
+
+    namespace nsConstantsAndFields
+    {
+        class ConstantsAndFields
+        {
+            public void Run()
+            {
+                // Неизменность поля ссылочного типа означает неизменность ссылки, которую этот тип содержит, а вовсе не объекта, на которую указывает ссылка
+
+            }
+        }
+
+        public sealed class SomeLibraryType
+        {
+            public const Int32 MaxEntriesInList = 50;
+            public static readonly Int32 MaxEntries = 50;
+        }
+
+        public sealed class SomeType
+        {
+            // Статическое неизменяемое поле. Его значение рассчитывается
+            // и сохраняется в памяти при инициализации класса во время выполнения
+            public static readonly Random s_random = new Random();
+
+            // Статическое изменяемое поле
+            private static Int32 s_numberOfWrites = 0;
+
+            // Неизменяемое экземплярное поле
+            public readonly String Pathname = "Untitled";
+
+            // Изменяемое экземплярное поле
+            private System.IO.FileStream m_fs;
+
+            public SomeType(String pathname)
+            {
+                // Эта строка изменяет значение неизменяемого поля
+                // В данном случае это возможно, так как показанный далее код
+                // расположен в конструкторе
+                this.Pathname = pathname;
+            }
+
+            public String DoSomething()
+            {
+                // Эта строка читает и записывает значение статического изменяемого поля
+                s_numberOfWrites = s_numberOfWrites + 1;
+                // Эта строка читает значение неизменяемого экземплярного поля
+                return Pathname;
+            }
+        }
+    }
+
+    namespace nsMethods
+    {
+        class Methods
+        {
+            public void Run()
+            {
+                Rational r1 = 5; // Неявное приведение Int32 к Rational
+                Rational r2 = 2.5F; // Неявное приведение Single к Rational
+                Int32 x = (Int32)r1; // Явное приведение Rational к Int32
+                Single s = (Single)r2; // Явное приведение Rational к Single
+
+                // С# генерирует код вызова операторов неявного преобразования в случае, когда используется выражение приведения типов.
+                // Однако операторы неявного преобразования никогда не вызываются, если используется оператор as или is.
+            }
+
+            public void TestExtensionMethods()
+            {
+                // Инициализирующая строка
+                StringBuilder sb = new StringBuilder("Hello. My name is Jeff.");
+
+                // Замена точки восклицательным знаком
+                // и получение номера символа в первом предложении (5)
+                Int32 index = sb.Replace('.', '!').IndexOf('!');
+
+                // Показывает каждый символ в каждой строке консоли
+                "Grant".ShowItems();
+                // Показывает каждую строку в каждой строке консоли
+                new[] { "Jeff", "Kristin" }.ShowItems();
+                // Показывает каждый Int32 в каждой строчке консоли.
+                new List<Int32>() { 1, 2, 3 }.ShowItems();
+            }
+
+            public void TestPartialMethod()
+            {
+
+            }
+        }
+
+        internal sealed class SomeType
+        {
+            // Здесь нет кода, явно инициализирующего поля
+            private Int32 m_x;
+            private String m_s;
+            private Double m_d;
+            private Byte m_b;
+            // Код этого конструктора инициализирует поля значениями по умолчанию
+            // Этот конструктор должен вызываться всеми остальными конструкторами
+            public SomeType()
+            {
+                m_x = 5;
+                m_s = "Hi there";
+                m_d = 3.14159;
+                m_b = 0xff;
+            }
+            // Этот конструктор инициализирует поля значениями по умолчанию,
+            // а затем изменяет значение m_x
+            public SomeType(Int32 x)
+                : this()
+            {
+                m_x = x;
+            }
+            // Этот конструктор инициализирует поля значениями по умолчанию,
+            // а затем изменяет значение m_s
+            public SomeType(String s)
+                : this()
+            {
+                m_s = s;
+            }
+            // Этот конструктор инициализирует поля значениями по умолчанию,
+            // а затем изменяет значения m_x и m_s
+            public SomeType(Int32 x, String s)
+                : this()
+            {
+                m_x = x;
+                m_s = s;
+            }
+        }
+
+        public sealed class Complex
+        {
+            public static Complex operator+(Complex c1, Complex c2)
+            {
+                return new Complex();
+            }
+        }
+
+        public sealed class Rational
+        {
+            // Создает Rational из Int32
+            public Rational(Int32 num)
+            {
+
+            }
+
+            // Создает Rational из Single
+            public Rational(Single num)
+            {
+
+            }
+
+            // Преобразует Rational в Int32
+            public Int32 ToInt32()
+            {
+                return 5;
+            }
+
+            // Преобразует Rational в Single
+            public Single ToSingle()
+            {
+                return 5;
+            }
+
+            // Неявно создает Rational из Int32 и возвращает полученный объект
+            public static implicit operator Rational(Int32 num)
+            {
+                return new Rational(num);
+            }
+            // Неявно создает Rational из Single и возвращает полученный объект
+            public static implicit operator Rational(Single num)
+            {
+                return new Rational(num);
+            }
+            // Явно возвращает объект типа Int32, полученный из Rational
+            public static explicit operator Int32(Rational r)
+            {
+                return r.ToInt32();
+            }
+            // Явно возвращает объект типа Single, полученный из Rational
+            public static explicit operator Single(Rational r)
+            {
+                return r.ToSingle();
+            }
+        }
+
+        public static class StringBuilderExtensions
+        {
+            public static Int32 IndexOf(this StringBuilder sb, Char value)
+            {
+                for (Int32 index = 0; index < sb.Length; index++)
+                    if (sb[index] == value)
+                        return index;
+                return -1;
+            }
+
+            public static void ShowItems<T>(this IEnumerable<T> collection)
+            {
+                foreach (var item in collection)
+                    Console.WriteLine(item);
+            }
+        }
+
+        // Сгенерированный при помощи инструмента программный код
+        internal sealed partial class Base
+        {
+            private String m_name;
+            // Это объявление с определением частичного метода вызывается
+            // перед изменением поля m_name
+            partial void OnNameChanging(String value);
+            public String Name
+            {
+                get { return m_name; }
+                set
+                {
+                    // Информирование класса о потенциальном изменении
+                    OnNameChanging(value.ToUpper());
+                    m_name = value; // Изменение поля
+                }
+            }
+        }
+
+        // Написанный программистом код, содержащийся в другом файле
+        internal sealed partial class Base
+        {
+            // Это объявление с реализацией частичного метода вызывается перед тем,
+            // как будет изменено поле m_name
+            partial void OnNameChanging(String value)
+            {
+                if (String.IsNullOrEmpty(value))
+                    throw new ArgumentNullException("value");
+            }
+        }
+    }
 }

@@ -33,6 +33,10 @@ namespace CLR_VIA_C_SHARP._2_Type_Design.Testing
             testMethods.Run();
             testMethods.TestExtensionMethods();
             testMethods.TestPartialMethod();
+
+            // 9 Parameters
+            nsParameters.Parameters testParameters= new nsParameters.Parameters();
+            testParameters.Run();
         }
     }
 
@@ -682,6 +686,35 @@ namespace CLR_VIA_C_SHARP._2_Type_Design.Testing
             {
                 if (String.IsNullOrEmpty(value))
                     throw new ArgumentNullException("value");
+            }
+        }
+    }
+
+    namespace nsParameters
+    {
+        public class Parameters
+        {
+            private static Int32 s_n = 0;
+
+            public void Run()
+            {
+                // 1. Аналогично: M(9, "A", default(DateTime), new Guid());
+                M();
+                // 2. Аналогично: M(8, "X", default(DateTime), new Guid());
+                M(8, "X");
+                // 3. Аналогично: M(5, "A", DateTime.Now, Guid.NewGuid());
+                M(5, guid: Guid.NewGuid(), dt: DateTime.Now);
+                M(5, guid: Guid.NewGuid(), dt: DateTime.Now);
+                // 4. Аналогично: M(0, "1", default(DateTime), new Guid());
+                M(s_n++, s_n++.ToString());
+                // 5. Аналогично: String t1 = "2"; Int32 t2 = 3;
+                // M(t2, t1, default(DateTime), new Guid());
+                M(s: (s_n++).ToString(), x: s_n++);
+            }
+
+            private static void M(Int32 x = 9, String s = "A", DateTime dt = default(DateTime), Guid guid = new Guid())
+            {
+                Console.WriteLine("x={0}, s={1}, dt={2}, guid={3}", x, s, dt, guid);
             }
         }
     }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace CLR_VIA_C_SHARP._2_Type_Design.Testing
 {
@@ -37,6 +38,14 @@ namespace CLR_VIA_C_SHARP._2_Type_Design.Testing
             // 9 Parameters
             nsParameters.Parameters testParameters= new nsParameters.Parameters();
             testParameters.Run();
+
+            // 10 Properties
+            nsProperties.Properties testProperties = new nsProperties.Properties();
+            testProperties.Run();
+
+            // 11 Events
+            nsEvents.Events testEvents = new nsEvents.Events();
+            testEvents.Run();
         }
     }
 
@@ -710,11 +719,315 @@ namespace CLR_VIA_C_SHARP._2_Type_Design.Testing
                 // 5. Аналогично: String t1 = "2"; Int32 t2 = 3;
                 // M(t2, t1, default(DateTime), new Guid());
                 M(s: (s_n++).ToString(), x: s_n++);
+
+                Int32 x;
+                GetVal(out x);
+                Console.WriteLine(x);
+
+                Int32 y = 5; // не скомпилируеться без присваивания, так как ref.
+                AddVal(ref y);
+                Console.WriteLine(y);
+
+                // Переменное количество параметров
+                Int32 sum = Add(1, 2, 3);
+                Console.WriteLine(sum);
+
+                // при написании метода, работающего с набором элементов, лучше всего объявить параметр метода,
+                // используя интерфейс IEnumerable<T> вместо сильного типа данных, например List<T>,
+                // или еще более сильного интерфейсного типа ICollection<T> или IList<T>:
+
+                // Естественно, при создании метода, получающего список (а не просто любой перечислимый объект),
+                // нужно объявлять тип параметра как IList<T>, в то время как типа List<T> лучше избегать.
+
+                // Этот же подход применим к классам, опирающимся на архитектуру базовых классов.
+
+                // В то же время, объявляя тип возвращаемого методом объекта, желательно выбирать самый сильный из доступных вариантов
+                // (пытаясь не ограничиваться конкретным типом). Например, лучше объявлять метод, возвращающий объект FileStream, а не Stream:
+
+                // Однако для метода, возвращающего объект List<String>, вполне возможно изменение реализации, после которого 
+                // он начнет возвращать тип String[]. В подобных случаях следует выбирать более слабый тип возвращаемого объекта.
+
+
             }
 
             private static void M(Int32 x = 9, String s = "A", DateTime dt = default(DateTime), Guid guid = new Guid())
             {
                 Console.WriteLine("x={0}, s={1}, dt={2}, guid={3}", x, s, dt, guid);
+            }
+
+            private static void GetVal(out Int32 v)
+            {
+                v = 10;
+            }
+
+            private static void AddVal(ref Int32 v)
+            {
+                v += 10;
+            }
+
+            static Int32 Add(params Int32[] values)
+            {
+                // ПРИМЕЧАНИЕ: при необходимости этот массив
+                // можно передать другим методам
+                Int32 sum = 0;
+                if (values != null)
+                {
+                    for (Int32 x = 0; x < values.Length; x++)
+                        sum += values[x];
+                }
+                return sum;
+            }
+
+            // Рекомендуется в этом методе использовать параметр слабого типа
+            public void ManipulateItems<T>(IEnumerable<T> collection)
+            {
+
+            }
+
+            // Не рекомендуется в этом методе использовать параметр сильного типа
+            public void BadManipulateItems<T>(List<T> collection)
+            {
+
+            }
+
+            // Рекомендуется в этом методе использовать параметр мягкого типа
+            public void ProcessBytes(Stream someStream)
+            {
+
+            }
+
+            // Не рекомендуется в этом методе использовать параметр сильного типа
+            public void BadProcessBytes(FileStream fileStream)
+            {
+
+            }
+
+            // Рекомендуется в этом методе использовать
+            // сильный тип возвращаемого объекта
+            public FileStream OpenFile()
+            {
+                return null;
+            }
+
+            // Не рекомендуется в этом методе использовать
+            // слабый тип возвращаемого объекта
+            public Stream BadOpenFile()
+            {
+                return null;
+            }
+
+            // Гибкий вариант: в этом методе используется
+            // мягкий тип возвращаемого объекта
+            public IList<String> GetStringCollection()
+            {
+                return null;
+            }
+
+            // Негибкий вариант: в этом методе используется
+            // сильный тип возвращаемого объекта
+            public List<String> BadGetStringCollection()
+            {
+                return null;
+            }
+        }
+    }
+
+    namespace nsProperties
+    {
+        public class Properties
+        {
+            public void Run()
+            {
+                Employee e = new Employee();
+                e.Name = "Jeffrey Richter";
+                String employeeName = e.Name;
+                e.Age = 41;
+                // e.Age = -5; // ArgumentOutOfRangeException
+                Int32 employeeAge = e.Age;
+
+                // Методы get и set свойства довольно часто манипулируют закрытым полем,
+                // определенным в типе. Это поле обычно называют резервным (backing field).
+                e.Test = 5;
+                Int32 test = e.Test;
+
+                Employee edy = new Employee() { Name = "Edy", Age = 25 };
+                String s = new Employee { Name = "Jeff", Age = 45 }.ToString().ToUpper();
+
+                // Кортежный тип (tuple type) — это тип, который содержит коллекцию свойств, каким-то образом связанных друг с другом.
+                // Определение типа, создание сущности и инициализация свойств
+                var o1 = new { Name = "Jeff", Year = 1964 };
+                // Вывод свойств на консоль
+                Console.WriteLine("Name={0}, Year={1}", o1.Name, o1.Year);
+
+                String Name = "Grant";
+                DateTime dt = DateTime.Now;
+                // Анонимный тип с двумя свойствами
+                // 1. Строковому свойству Name назначено значение Grant
+                // 2. Свойству Year типа Int32 Year назначен год из dt
+                var o2 = new { Name, dt.Year };
+
+                var people = new[]
+                {
+                    o1, // См. ранее в этом разделе
+                    new { Name = "Kristin", Year = 1970 },
+                    new { Name = "Aidan", Year = 2003 },
+                    new { Name = "Grant", Year = 2008 }
+                };
+
+                // Организация перебора массива анонимных типов
+                // (ключевое слово var обязательно).
+                foreach (var person in people)
+                    Console.WriteLine("Person={0}, Year={1}", person.Name, person.Year);
+
+                // LINQ example
+                String myDocuments = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                var query =
+                from pathname in Directory.GetFiles(myDocuments)
+                let LastWriteTime = File.GetLastWriteTime(pathname)
+                where LastWriteTime > (DateTime.Now - TimeSpan.FromDays(7))
+                orderby LastWriteTime
+                select new { Path = pathname, LastWriteTime };
+                foreach (var file in query)
+                    Console.WriteLine("LastWriteTime={0}, Path={1}",
+                    file.LastWriteTime, file.Path);
+
+                var minmax = MinMax(6, 2);
+                Console.WriteLine("Min={0}, Max={1}", minmax.Item1, minmax.Item2); // Min=2, Max=6
+
+                // Свойства с параметрами
+
+                // Выделить массив BitArray, который может хранить 14 бит
+                BitArray ba = new BitArray(14);
+                // Установить все четные биты вызовом метода доступа set
+                for (Int32 x = 0; x < 14; x++)
+                {
+                    ba[x] = (x % 2 == 0);
+                }
+
+                // Вывести состояние всех битов вызовом метода доступа get
+                for (Int32 x = 0; x < 14; x++)
+                {
+                    Console.WriteLine("Bit " + x + " is " + (ba[x] ? "On" : "Off"));
+                }
+            }
+
+            // Возвращает минимум в Item1 и максимум в Item2
+            private static Tuple<Int32, Int32> MinMax(Int32 a, Int32 b)
+            {
+                return new Tuple<Int32, Int32>(Math.Min(a, b), Math.Max(a, b));
+            }
+        }
+
+        public sealed class Employee
+        {
+            private String m_Name;
+            private Int32 m_Age;
+
+            public String GetName()
+            {
+                return m_Name;
+            }
+
+            public void SetName(String value)
+            {
+                m_Name = value;
+            }
+
+            public Int32 GetAge()
+            {
+                return m_Age;
+            }
+
+            public void SetAge(Int32 value)
+            {
+                if (value < 0)
+                    throw new ArgumentOutOfRangeException("value", value.ToString(), "The value must be greater or equal to 0");
+                m_Age = value;
+            }
+
+            public String Name
+            {
+                get { return m_Name; }
+                set { m_Name = value; } // ключевое слово value идентифицирует новое значение
+            }
+
+            public Int32 Age
+            {
+                get { return m_Age; }
+                set
+                {
+                    if (value < 0)
+                        throw new ArgumentOutOfRangeException("value", value.ToString(), "The value must be greater or equal to 0");
+                    m_Age = value;
+                }
+            }
+
+            public Int32 Test
+            {
+                get;
+                set;
+            }
+        }
+
+        public sealed class BitArray
+        {
+            // Закрытый байтовый массив, хранящий биты
+            private Byte[] m_byteArray;
+            private Int32 m_numBits;
+            // Конструктор, выделяющий память для байтового массива
+            // и устанавливающий все биты в 0
+            public BitArray(Int32 numBits)
+            {
+                // Начинаем с проверки аргументов
+                if (numBits <= 0)
+                    throw new ArgumentOutOfRangeException("numBits must be > 0");
+                // Сохранить число битов
+                m_numBits = numBits;
+                // Выделить байты для массива битов
+                m_byteArray = new Byte[(numBits + 7) / 8];
+            }
+            // Индексатор (свойство с параметрами)
+            public Boolean this[Int32 bitPos]
+            {
+                // Метод доступа get индексатора
+                get
+                {
+                    // Сначала нужно проверить аргументы
+                    if ((bitPos < 0) || (bitPos >= m_numBits))
+                        throw new ArgumentOutOfRangeException("bitPos");
+                    // Вернуть состояние индексируемого бита
+                    return (m_byteArray[bitPos / 8] & (1 << (bitPos % 8))) != 0;
+                }
+                // Метод доступа set индексатора
+                set
+                {
+                    if ((bitPos < 0) || (bitPos >= m_numBits))
+                        throw new ArgumentOutOfRangeException(
+                        "bitPos", bitPos.ToString());
+                    if (value)
+                    {
+                        // Установить индексируемый бит
+                        m_byteArray[bitPos / 8] = (Byte)
+                        (m_byteArray[bitPos / 8] | (1 << (bitPos % 8)));
+                    }
+                    else
+                    {
+                        // Сбросить индексируемый бит
+                        m_byteArray[bitPos / 8] = (Byte)
+                        (m_byteArray[bitPos / 8] & ~(1 << (bitPos % 8)));
+                    }
+                }
+            }
+        }
+    }
+
+    namespace nsEvents
+    {
+        public class Events
+        {
+            public void Run()
+            {
+                
             }
         }
     }

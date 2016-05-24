@@ -47,6 +47,10 @@ namespace CLR_VIA_C_SHARP._2_Type_Design.Testing
             // 11 Events
             nsEvents.Events testEvents = new nsEvents.Events();
             testEvents.Run();
+
+            // 12 Generic
+            nsGeneric.Generic testGeneric = new nsGeneric.Generic();
+            testGeneric.Run();
         }
     }
 
@@ -1108,6 +1112,12 @@ namespace CLR_VIA_C_SHARP._2_Type_Design.Testing
                 twle.Foo += HandleFooEvent;
                 // Проверяем работоспособность
                 twle.SimulateFoo();
+
+
+                Developer d = new Developer();
+                QA qa = new QA(d);
+                Manager m = new Manager(d);
+                d.RecieveBug("lol");
             }
 
             private static void HandleFooEvent(object sender, FooEventArgs e)
@@ -1305,6 +1315,91 @@ namespace CLR_VIA_C_SHARP._2_Type_Design.Testing
             // 2d. Определение метода, преобразующего входные данные этого события
             public void SimulateFoo() { OnFoo(new FooEventArgs()); }
             #endregion
+        }
+
+        class Developer
+        {
+            public event EventHandler<NewBugEventArgs> NewBug;
+
+            public void RecieveBug(String info)
+            {
+                NewBugEventArgs e = new NewBugEventArgs(info);
+                OnNewBug(e);
+            }
+
+            protected virtual void OnNewBug(NewBugEventArgs e)
+            {
+                EventHandler<NewBugEventArgs> temp = Volatile.Read(ref NewBug);
+                if (temp != null)
+                    temp(this, e);
+            }
+        }
+
+        class QA
+        {
+            public QA(Developer d)
+            {
+                d.NewBug += OnNewBug;
+            }
+
+            public void Unregister(Developer d)
+            {
+                d.NewBug -= OnNewBug;
+            }
+
+            public void OnNewBug(Object sender, NewBugEventArgs e)
+            {
+                Console.WriteLine(e.Info);
+            }
+
+        }
+
+        class Manager
+        {
+            public Manager(Developer d)
+            {
+                d.NewBug += OnNewBug;
+            }
+
+            public void Unregister(Developer d)
+            {
+                d.NewBug -= OnNewBug;
+            }
+
+            public void OnNewBug(Object sender, NewBugEventArgs e)
+            {
+                Console.WriteLine(e.Info);
+            }
+        }
+
+        internal class NewBugEventArgs : EventArgs
+        {
+            private readonly String m_info;
+
+            public NewBugEventArgs(String info)
+            {
+                m_info = info;
+            }
+
+            public String Info
+            {
+                get
+                {
+                    return m_info;
+                }
+            }
+        }
+
+    }
+
+    namespace nsGeneric
+    {
+        class Generic
+        {
+            public void Run()
+            {
+
+            }
         }
     }
 }

@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Threading;
+using System.Collections;
+using System.Diagnostics;
 
 namespace CLR_VIA_C_SHARP._2_Type_Design.Testing
 {
@@ -1398,8 +1400,112 @@ namespace CLR_VIA_C_SHARP._2_Type_Design.Testing
         {
             public void Run()
             {
+                testList();
+                ValueTypePerfTest();
+                ReferenceTypePerfTest();
+                // Обобщения в библиотеке FCL 307
+            }
 
+            private void testList()
+            {
+                List<DateTime> dtList = new List<DateTime>();
+                dtList.Add(DateTime.Now);
+                dtList.Add(DateTime.MinValue);
+                // dtList.Add("1/1/2004"); // compile error
+                DateTime dt = dtList[0];
+                // - Защита исходного кода.
+                // - Безопасность типов.
+                // - Более простой и понятный код.
+                // - Повышение производительности.
+            }
+
+            private static void ValueTypePerfTest()
+            {
+                const Int32 count = 10000000;
+                using (new OperationTimer("List<Int32>"))
+                {
+                    List<Int32> l = new List<Int32>();
+                    for (Int32 n = 0; n < count; n++)
+                    {
+                        l.Add(n); // Без упаковки
+                        Int32 x = l[n]; // Без распаковки
+                    }
+                    l = null; // Для удаления в процессе уборки мусора
+                }
+                using (new OperationTimer("ArrayList of Int32"))
+                {
+                    ArrayList a = new ArrayList();
+                    for (Int32 n = 0; n < count; n++)
+                    {
+                        a.Add(n); // Упаковка
+                        Int32 x = (Int32)a[n]; // Распаковка
+                    }
+                    a = null; // Для удаления в процессе уборки мусора
+                }
+            }
+
+            private static void ReferenceTypePerfTest()
+            {
+                const Int32 count = 10000000;
+                using (new OperationTimer("List<String>"))
+                {
+                    List<String> l = new List<String>();
+                    for (Int32 n = 0; n < count; n++)
+                    {
+                        l.Add("X"); // Копирование ссылки
+                        String x = l[n]; // Копирование ссылки
+                    }
+                    l = null; // Для удаления в процессе уборки мусора
+                }
+                using (new OperationTimer("ArrayList of String"))
+                {
+                    ArrayList a = new ArrayList();
+                    for (Int32 n = 0; n < count; n++)
+                    {
+                        a.Add("X"); // Копирование ссылки
+                        String x = (String)a[n]; // Проверка преобразования
+                    } // и копирование ссылки
+                    a = null; // Для удаления в процессе уборки мусора
+                }
+            }
+
+            // Класс для оценки времени выполнения операций
+            public sealed class OperationTimer : IDisposable
+            {
+                private static Int32 s_NumOperationTimersStarted;
+                private Stopwatch m_sw;
+                private String m_text;
+                private Int32 m_collectionCount;
+
+                public OperationTimer() : this(String.Empty) { }
+
+                public OperationTimer(String text)
+                {
+                    if (Interlocked.Increment(ref s_NumOperationTimersStarted) == 1)
+                        PrepareForOperation();
+                    m_text = text;
+                    m_collectionCount = GC.CollectionCount(0);
+                    m_sw = Stopwatch.StartNew();	
+                }
+
+                public void Dispose()
+                {
+                    Console.WriteLine("{0,7:N0} (GCs={1,3}) {2}",
+                    m_sw.Elapsed.TotalMilliseconds,
+                    GC.CollectionCount(0) - m_collectionCount, m_text);
+                    Interlocked.Decrement(ref s_NumOperationTimersStarted);
+                    m_sw = null;
+                }
+
+                private static void PrepareForOperation()
+                {
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                    GC.Collect();
+                }
             }
         }
+
+
     }
 }

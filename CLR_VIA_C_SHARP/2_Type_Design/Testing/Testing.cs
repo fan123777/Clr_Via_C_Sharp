@@ -1398,12 +1398,20 @@ namespace CLR_VIA_C_SHARP._2_Type_Design.Testing
     {
         class Generic
         {
+            public delegate TResult Func<in T, out TResult>(T arg);
+
             public void Run()
             {
                 testList();
-                ValueTypePerfTest();
-                ReferenceTypePerfTest();
-                // Обобщения в библиотеке FCL 307
+                // ValueTypePerfTest();
+                // ReferenceTypePerfTest();
+                TestArray();
+                TestGeneric();
+                TestGenericInterface();
+                TestDelegate();
+                // Теперь поговорим о различных типах ограничений, которые компилятор и CLR позволяют применять к параметрам типа.
+                // К параметру-типу могут применяться следующие ограничения: основное (primary), дополнительное (secondary) и/или ограничение конструктора (constructor constraint).
+                TestConstraints();
             }
 
             private void testList()
@@ -1419,7 +1427,93 @@ namespace CLR_VIA_C_SHARP._2_Type_Design.Testing
                 // - Повышение производительности.
             }
 
-            private static void ValueTypePerfTest()
+            private void TestArray()
+            {
+                // Создание и инициализация массива байтов
+                Byte[] byteArray = new Byte[] { 5, 1, 4, 2, 3 };
+
+                // Вызов алгоритма сортировки Byte[]
+                Array.Sort<Byte>(byteArray);
+
+                // Вызов алгоритма двоичного поиска Byte[]
+                Int32 i = Array.BinarySearch<Byte>(byteArray, 1);
+                Console.WriteLine(i); // Выводит "0"
+            }
+
+            private void TestGeneric()
+            {
+                Object o = null;
+                // Dictionary<,> — открытый тип с двумя параметрами типа
+                Type t = typeof(Dictionary<,>);
+                // Попытка создания экземпляра этого типа (неудачная)
+                o = CreateInstance(t);
+                Console.WriteLine();
+
+                // DictionaryStringKey<> — открытый тип с одним параметром типа
+
+                t = typeof(DictionaryStringKey<>);
+                // Попытка создания экземпляра этого типа (неудачная)
+                o = CreateInstance(t);
+                Console.WriteLine();
+                // DictionaryStringKey<Guid> — это закрытый тип
+                t = typeof(DictionaryStringKey<Guid>);
+                // Попытка создания экземпляра этого типа (удачная)
+                o = CreateInstance(t);
+                // Проверка успешности попытки
+                Console.WriteLine("Object type=" + o.GetType());
+
+
+                Node<Char> head = new Node<Char>('C');
+                head = new Node<Char>('B', head);
+                head = new Node<Char>('A', head);
+                Console.WriteLine(head.ToString()); // Выводится "ABC"
+
+                nsTypedNode.Node myHead = new nsTypedNode.TypedNode<Char>('.');
+                myHead = new nsTypedNode.TypedNode<DateTime>(DateTime.Now, myHead);
+                myHead = new nsTypedNode.TypedNode<String>("Today is ", myHead);
+                Console.WriteLine(myHead.ToString());
+            }
+
+            private void TestGenericInterface()
+            {
+
+            }
+
+            private void TestDelegate()
+            {
+                Func<Object, ArgumentException> fn1 = null;
+                Func<String, Exception> fn2 = fn1; // Явного приведения типа не требуется
+                Exception e = fn2("");
+            }
+
+            // internal sealed class Triangle : IEnumerator<Point>
+            // {
+            //     private Point[] m_vertices;
+            //     // Тип свойства Current в IEnumerator<Point> - это Point
+            //     public Point Current { get { return new Point(); } }
+            // }
+
+            public struct Point
+            {
+
+            }
+
+            private Object CreateInstance(Type t)
+            {
+                Object o = null;
+                try
+                {
+                    o = Activator.CreateInstance(t);
+                    Console.Write("Created instance of {0}", t.ToString());
+                }
+                catch (ArgumentException e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+                return o;
+            }
+
+            private void ValueTypePerfTest()
             {
                 const Int32 count = 10000000;
                 using (new OperationTimer("List<Int32>"))
@@ -1444,7 +1538,7 @@ namespace CLR_VIA_C_SHARP._2_Type_Design.Testing
                 }
             }
 
-            private static void ReferenceTypePerfTest()
+            private void ReferenceTypePerfTest()
             {
                 const Int32 count = 10000000;
                 using (new OperationTimer("List<String>"))
@@ -1504,8 +1598,219 @@ namespace CLR_VIA_C_SHARP._2_Type_Design.Testing
                     GC.Collect();
                 }
             }
+
+            private static void Swap<T>(ref T o1, ref T o2)
+            {
+                T temp = o1;
+                o1 = o2;
+                o2 = temp;
+            }
+
+            public static T Min<T>(T o1, T o2) where T : IComparable<T>
+            {
+                if (o1.CompareTo(o2) < 0) return o1;
+                return o2;
+            }
+
+            private void TestConstraints()
+            {
+                // В параметре-типе можно задать не более одного основного ограничения.
+                // Основным ограничением может быть ссылочный тип, указывающий на незапечатанный класс.
+                // Нельзя использовать для этой цели следующие ссылочные типы: System.Object, System.Array, System.Delegate, System.MulticastDelegate,
+                // System.ValueType, System.Enum и System.Void.
+
+                // Есть два особых основных ограничения: class и struct.
+
+                IList<String> ls = new List<String>();
+                ls.Add("A String");
+                // Преобразует IList<String> в IList<Object>
+                IList<Object> lo = ConvertIList<String, Object>(ls);
+                // Преобразует IList<String> в IList<IComparable>
+                IList<IComparable> lc = ConvertIList<String, IComparable>(ls);
+                // Преобразует IList<String> в IList<IComparable<String>>
+                IList<IComparable<String>> lcs = ConvertIList<String, IComparable<String>>(ls);
+                // Преобразует IList<String> в IList<String>
+                IList<String> ls2 = ConvertIList<String, String>(ls);
+                // Преобразует IList<String> в IList<Exception>
+                // IList<Exception> le = ConvertIList<String, Exception>(ls); // Ошибка
+
+                // Ограничения конструктора
+            }
+
+            private static List<TBase> ConvertIList<T, TBase>(IList<T> list)
+            where T : TBase
+            {
+                List<TBase> baseList = new List<TBase>(list.Count);
+                for (Int32 index = 0; index < list.Count; index++)
+                {
+                    baseList.Add(list[index]);
+                }
+                return baseList;
+            }
+
+            private static void CastingAGenericTypeVariable1<T>(T obj)
+            {
+                // Int32 x = (Int32)obj; // Ошибка
+                // String s = (String)obj; // Ошибка
+                Int32 x = (Int32)(Object)obj; // Ошибки нет
+                String s = (String)(Object)obj; // Ошибки нет
+                String s1 = obj as String; // Ошибки нет
+            }
+
+            private static void SettingAGenericTypeVariableToNull<T>()
+            {
+                // T temp = null; // CS0403: нельзя привести null к параметру типа T
+                // because it could be a value type...
+                // (Ошибка CS0403: нельзя привести null к параметру типа Т,
+                // поскольку T может иметь значимый тип...)
+                T temp = default(T); // Работает
+            }
+
+            private static void ComparingAGenericTypeVariableWithNull<T>(T obj)
+            {
+                if (obj == null)
+                { /* Этот код никогда не исполняется для значимого типа */ }
+            }
+
+            private static void ComparingTwoGenericTypeVariables<T>(T o1, T o2)
+            {
+                // if (o1 == o2) { } // Ошибка
+            }
         }
 
+        internal sealed class PrimaryConstraintOfStream<T> where T : Stream
+        {
+            public void M(T stream)
+            {
+                stream.Close();// OK
+            }
+        }
 
+        internal sealed class PrimaryConstraintOfClass<T> where T : class
+        {
+            public void M()
+            {
+                T temp = null;// Допустимо, потому что тип T должен быть ссылочным
+            }
+        }
+
+        internal sealed class PrimaryConstraintOfStruct<T> where T : struct
+        {
+            public static T Factory()
+            {
+                // Допускается, потому что у каждого значимого типа неявно
+                // есть открытый конструктор без параметров
+                return new T();
+            }
+        }
+
+        internal sealed class ConstructorConstraint<T> where T : new()
+        {
+            public static T Factory()
+            {
+                // Допустимо, потому что у всех значимых типов неявно
+                // есть открытый конструктор без параметров, и потому что
+                // это ограничение требует, чтобы у всех указанных ссылочных типов
+                // также был открытый конструктор без параметров
+                return new T();
+            }
+        }
+
+        // Частично определенный открытый тип
+        internal sealed class DictionaryStringKey<TValue> :
+        Dictionary<String, TValue>
+        {
+        }
+
+        internal sealed class GenericTypeThatRequiresAnEnum<T>
+        {
+            static GenericTypeThatRequiresAnEnum()
+            {
+                if (!typeof(T).IsEnum)
+                {
+                    throw new ArgumentException("T must be an enumerated type");
+                }
+            }
+        }
+
+        internal sealed class Node<T>
+        {
+            public T m_data;
+            public Node<T> m_next;
+            public Node(T data)
+                : this(data, null)
+            {
+
+            }
+
+            public Node(T data, Node<T> next)
+            {
+                m_data = data; m_next = next;
+            }
+
+            public override String ToString()
+            {
+                return m_data.ToString() +
+                ((m_next != null) ? m_next.ToString() : null);
+            }
+        }
+
+        internal sealed class GenericType<T>
+        {
+            private T m_value;
+            public GenericType(T value) { m_value = value; }
+            public TOutput Converter<TOutput>()
+            {
+                TOutput result = (TOutput)Convert.ChangeType(m_value, typeof(TOutput));
+                return result;
+            }
+        }
+
+        internal class Base
+        {
+            public virtual void M<T1, T2>()
+                where T1 : struct
+                where T2 : class
+            {
+            }
+        }
+        internal sealed class Derived : Base
+        {
+            public override void M<T3, T4>()
+            // where T3 : EventArgs // Ошибка
+            // where T4 : class // Ошибка
+            { }
+        }
+
+        namespace nsTypedNode
+        {
+            internal class Node
+            {
+                protected Node m_next;
+                public Node(Node next)
+                {
+                    m_next = next;
+                }
+            }
+
+            internal sealed class TypedNode<T> : Node
+            {
+                public T m_data;
+                public TypedNode(T data)
+                    : this(data, null)
+                {
+                }
+                public TypedNode(T data, Node next)
+                    : base(next)
+                {
+                    m_data = data;
+                }
+                public override String ToString()
+                {
+                    return m_data.ToString() +
+                ((m_next != null) ? m_next.ToString() : String.Empty);
+                }
+            }
+        }
     }
 }

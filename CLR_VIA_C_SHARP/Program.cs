@@ -38,8 +38,10 @@ namespace CLR_VIA_C_SHARP
             if (false)
             {
                 _3_BaseDataTypes._14_Strings.Strings.main();
+                _3_BaseDataTypes._15_EnumsBitFlags.EnumsBitFlags.main();
             }
-            _3_BaseDataTypes._15_EnumsBitFlags.EnumsBitFlags.main();
+            _3_BaseDataTypes._16_Arrays.Arrays.main();
+            
         }
     }
 }

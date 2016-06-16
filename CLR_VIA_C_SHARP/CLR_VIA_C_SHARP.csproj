@@ -68,6 +68,7 @@
     <Compile Include="2_Type_Design\Testing\Testing.cs" />
     <Compile Include="3_BaseDataTypes\14_Strings\Strings.cs" />
     <Compile Include="3_BaseDataTypes\14_Strings\Testing.cs" />
+    <Compile Include="3_BaseDataTypes\15_EnumsBitFlags\EnumsBitFlags.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

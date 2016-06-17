@@ -20,6 +20,7 @@ namespace CLR_VIA_C_SHARP._3_BaseDataTypes._16_Arrays
             a.testDecimalArray();
             a.testInternalArrayRealization();
             a.testAccessArray();
+            a.testUnsafeArray();
         }
 
         private void testArray()
@@ -198,8 +199,110 @@ namespace CLR_VIA_C_SHARP._3_BaseDataTypes._16_Arrays
 
         private void testAccessArray()
         {
-
+            // Объявление двухмерного массива
+            Int32[,] a2Dim = new Int32[c_numElements, c_numElements];
+            // Объявление нерегулярного двухмерного массива (вектор векторов)
+            Int32[][] aJagged = new Int32[c_numElements][];
+            for (Int32 x = 0; x < c_numElements; x++)
+                aJagged[x] = new Int32[c_numElements];
+            // 1: Обращение к элементам стандартным, безопасным способом
+            Safe2DimArrayAccess(a2Dim);
+            // 2: Обращение к элементам с использованием нерегулярного массива
+            SafeJaggedArrayAccess(aJagged);
+            // 3: Обращение к элементам небезопасным методом
+            Unsafe2DimArrayAccess(a2Dim);
         }
+
+        private void testUnsafeArray()
+        {
+            StackallocDemo();
+            InlineArrayDemo();
+        }
+
+        private static void StackallocDemo()
+        {
+            unsafe
+            {
+                const Int32 width = 20;
+                Char* pc = stackalloc Char[width]; // В стеке выделяется память под массив
+                String s = "Jeffrey Richter"; // 15 символов
+                for (Int32 index = 0; index < width; index++)
+                {
+                    pc[width - index - 1] = (index < s.Length) ? s[index] : '.';
+                }
+                // Следующая инструкция выводит на экран ".....rethciR yerffeJ"
+                Console.WriteLine(new String(pc, 0, width));
+            }
+        }
+
+        private static void InlineArrayDemo()
+        {
+            unsafe
+            {
+                CharArray ca; // Память под массив выделяется в стеке
+                Int32 widthInBytes = sizeof(CharArray);
+                Int32 width = widthInBytes / 2;
+                String s = "Jeffrey Richter"; // 15 символов
+                for (Int32 index = 0; index < width; index++)
+                {
+                    ca.Characters[width - index - 1] =
+                    (index < s.Length) ? s[index] : '.';
+                }
+                // Следующая инструкция выводит на экран ".....rethciR yerffeJ"
+                Console.WriteLine(new String(ca.Characters, 0, width));
+            }
+        }
+
+        internal unsafe struct CharArray
+        {
+            // Этот массив встраивается в структуру
+            public fixed Char Characters[20];
+        }
+
+        private static Int32 Safe2DimArrayAccess(Int32[,] a)
+        {
+            Int32 sum = 0;
+            for (Int32 x = 0; x < c_numElements; x++)
+            {
+                for (Int32 y = 0; y < c_numElements; y++)
+                {
+                    sum += a[x, y];
+                }
+            }
+            return sum;
+        }
+
+        private static Int32 SafeJaggedArrayAccess(Int32[][] a)
+        {
+            Int32 sum = 0;
+            for (Int32 x = 0; x < c_numElements; x++)
+            {
+                for (Int32 y = 0; y < c_numElements; y++)
+                {
+                    sum += a[x][y];
+                }
+            }
+            return sum;
+        }
+
+        private static unsafe Int32 Unsafe2DimArrayAccess(Int32[,] a)
+        {
+            Int32 sum = 0;
+            fixed (Int32* pi = a)
+            {
+                for (Int32 x = 0; x < c_numElements; x++)
+                {
+                    Int32 baseOfDim = x * c_numElements;
+                    for (Int32 y = 0; y < c_numElements; y++)
+                    {
+                        sum += pi[baseOfDim + y];
+                    }
+                }
+            }
+            return sum;
+        }
+
+        private const Int32 c_numElements = 10000;
     }
 
     public class Employee
@@ -313,9 +416,25 @@ namespace CLR_VIA_C_SHARP._3_BaseDataTypes._16_Arrays
     // Кроме того, в C# и CLR возможен доступ к элементам массива при помощи небезопасного (неверифицируемого) кода.
     // В этом случае процедура проверки индексов массива просто отключается.
     // Данная техника применима только к массивам типа SByte, Byte, Int16, UInt16, Int32, UInt32, Int64, UInt64, Char, Single, Double, Decimal, Boolean, а также к массивам перечислимого типа или структуры значимого типа с полями одного из вышеуказанных типов.
-    // 430
+    // Существуют ситуации, в которых «небезопасный» доступ оказывается оптимальным, но у него есть три серьезных недостатка:
+    // - код обращения к элементам массива менее читабелен и более сложен в написании из-за присутствия инструкции fixed и вычисления адресов памяти;
+    // - ошибка в расчетах может привести к перезаписи памяти, не принадлежащей массиву, в результате возможны разрушение памяти, нарушение безопасности типов и потенциальные бреши в системе безопасности;
+    // - из-за высокой вероятности проблем CLR запрещает работу небезопасного кода в средах с пониженным уровнем безопасности (таких, как Microsoft Silverlight).
 
-
-
-
+    // Небезопасный доступ к массивам и массивы фиксированного размера
+    // Небезопасный доступ к массиву является крайне мощным средством, так как именно такой доступ дает возможность работать:
+    // - с элементами управляемого массива, расположенными в куче (как показано в предыдущем разделе);
+    // - с элементами массива, расположенными в неуправляемой куче (пример SecureString из главы 14 демонстрирует небезопасный метод доступа к массиву, возвращаемому методом SecureStringToCoTaskMemUnicode класса System.Runtime.InteropServices.Marshal);
+    // - с элементами массива, расположенными в стеке потока.
+    // Если производительность для вас критична, управляемый массив можно вместо кучи разместить в стеке потока.
+    // Для этого вам потребуется инструкция stackalloc языка C#.
+    // Так как массивы относятся к ссылочным типам, поле массива, определенное в структуре, содержит указатель или ссылку на этот массив;
+    // при этом сам он располагается вне памяти структуры.
+    // Впрочем, существует возможность встроить массив непосредственно в структуру.
+    // Вы это видели в показанном коде на примере структуры CharArray. При этом должны соблюдаться следующие условия:
+    // - тип должен быть структурой (значимым типом), встраивать массивы в класс (ссылочный тип) нельзя;
+    // - поле или структура, в которой оно определено, должно быть помечено модификатором unsafe;
+    // - поле массива должен быть помечено модификатором fixed;
+    // - массив должен быть одномерным и с нулевой нижней границей;
+    // - элементы массива могут принадлежать только к типам: Boolean, Char, SByte, Byte, Int32, UInt32, Int64, UInt64, Single и Double.
 }

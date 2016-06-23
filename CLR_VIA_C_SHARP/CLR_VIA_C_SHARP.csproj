@@ -72,6 +72,7 @@
     <Compile Include="3_BaseDataTypes\15_EnumsBitFlags\EnumsBitFlags.cs" />
     <Compile Include="3_BaseDataTypes\16_Arrays\Arrays.cs" />
     <Compile Include="3_BaseDataTypes\17_Delegates\Delegates.cs" />
+    <Compile Include="3_BaseDataTypes\18_CustomAttributes\CustomAttributes.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
